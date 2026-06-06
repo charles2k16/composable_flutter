@@ -46,7 +46,7 @@ class SupportScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 12),
                   const Text(
-                    'Composables IT Consult',
+                    '可组合业务咨询 IT Consult',
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
                   ),
                   const SizedBox(height: 4),

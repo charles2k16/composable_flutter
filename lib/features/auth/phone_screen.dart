@@ -40,7 +40,7 @@ class _PhoneScreenState extends State<PhoneScreen> {
     } catch (e) {
       setState(() {
         _error = e.toString().contains('No account found')
-            ? 'No account found. Contact Composables IT Consult.'
+            ? 'No account found. Contact 可组合业务咨询 IT Consult.'
             : 'Failed to send OTP. Check your connection.';
       });
     } finally {
