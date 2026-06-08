@@ -6,12 +6,21 @@ import '../models/models.dart';
 class AuthService {
   static const _storage = FlutterSecureStorage();
 
-  static Future<Map<String, dynamic>> requestOTP(String phone) async {
-    return ApiClient.requestOTP(phone);
+  static Future<Map<String, dynamic>> checkPhone(String phone) async {
+    return ApiClient.checkPhone(phone);
   }
 
-  static Future<ClientModel?> verifyOTP(String phone, String code) async {
-    final res = await ApiClient.verifyOTP(phone, code);
+  static Future<ClientModel?> setupPin(String phone, String pin) async {
+    final res = await ApiClient.setupPin(phone, pin);
+    return _saveSession(res);
+  }
+
+  static Future<ClientModel?> loginWithPin(String phone, String pin) async {
+    final res = await ApiClient.loginWithPin(phone, pin);
+    return _saveSession(res);
+  }
+
+  static Future<ClientModel?> _saveSession(Map<String, dynamic> res) async {
     if (res['access_token'] != null) {
       await ApiClient.saveToken(res['access_token']);
       await _storage.write(key: 'client_data', value: jsonEncode(res['client']));

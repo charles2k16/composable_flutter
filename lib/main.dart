@@ -34,7 +34,7 @@ class ComposablesApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: '可组合业务咨询 IT',
+      title: 'Composables IT',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.dark,
       home: loggedIn ? const HomeScreen() : const PhoneScreen(),

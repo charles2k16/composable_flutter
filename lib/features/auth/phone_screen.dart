@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../core/services/auth_service.dart';
 import '../../core/theme/app_theme.dart';
-import 'otp_screen.dart';
+import 'pin_screen.dart';
 
 class PhoneScreen extends StatefulWidget {
   const PhoneScreen({super.key});
@@ -16,32 +16,39 @@ class _PhoneScreenState extends State<PhoneScreen> {
   bool _loading = false;
   String? _error;
 
-  Future<void> _requestOTP() async {
+  Future<void> _continue() async {
     final phone = _phoneController.text.trim();
     if (phone.length < 10) {
       setState(() => _error = 'Enter a valid phone number');
       return;
     }
 
-    setState(() { _loading = true; _error = null; });
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
 
     try {
-      final result = await AuthService.requestOTP(phone);
+      final result = await AuthService.checkPhone(phone);
       if (!mounted) return;
 
-      // In dev, show the code
-      final devCode = result['devCode'];
+      final hasPin = result['hasPin'] == true;
+      final name = result['name'] as String?;
 
       Navigator.of(context).push(
         MaterialPageRoute(
-          builder: (_) => OTPScreen(phone: phone, devCode: devCode),
+          builder: (_) => PinScreen(
+            phone: phone,
+            clientName: name,
+            mode: hasPin ? PinMode.login : PinMode.setup,
+          ),
         ),
       );
     } catch (e) {
       setState(() {
         _error = e.toString().contains('No account found')
-            ? 'No account found. Contact 可组合业务咨询 IT Consult.'
-            : 'Failed to send OTP. Check your connection.';
+            ? 'No account found. Contact Composables IT Consult.'
+            : 'Could not verify phone. Check your connection.';
       });
     } finally {
       if (mounted) setState(() => _loading = false);
@@ -58,8 +65,6 @@ class _PhoneScreenState extends State<PhoneScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 40),
-
-              // Logo
               RichText(
                 text: const TextSpan(
                   children: [
@@ -89,10 +94,7 @@ class _PhoneScreenState extends State<PhoneScreen> {
                 'Installment Tracker',
                 style: TextStyle(fontSize: 13, color: AppTheme.textTertiary),
               ),
-
               const SizedBox(height: 56),
-
-              // Welcome text
               Text(
                 'Welcome back',
                 style: Theme.of(context).textTheme.displaySmall,
@@ -100,15 +102,20 @@ class _PhoneScreenState extends State<PhoneScreen> {
               const SizedBox(height: 8),
               const Text(
                 'Enter your registered phone number to access your installment account.',
-                style: TextStyle(fontSize: 14, color: AppTheme.textSecondary, height: 1.5),
+                style: TextStyle(
+                  fontSize: 14,
+                  color: AppTheme.textSecondary,
+                  height: 1.5,
+                ),
               ),
-
               const SizedBox(height: 36),
-
-              // Phone input
               const Text(
                 'Phone Number',
-                style: TextStyle(fontSize: 12, color: AppTheme.textSecondary, fontWeight: FontWeight.w500),
+                style: TextStyle(
+                  fontSize: 12,
+                  color: AppTheme.textSecondary,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
               const SizedBox(height: 8),
               TextFormField(
@@ -116,7 +123,11 @@ class _PhoneScreenState extends State<PhoneScreen> {
                 keyboardType: TextInputType.phone,
                 inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                 maxLength: 10,
-                style: const TextStyle(fontSize: 18, letterSpacing: 2, fontWeight: FontWeight.w500),
+                style: const TextStyle(
+                  fontSize: 18,
+                  letterSpacing: 2,
+                  fontWeight: FontWeight.w500,
+                ),
                 decoration: InputDecoration(
                   hintText: '0244 123 456',
                   counterText: '',
@@ -127,25 +138,23 @@ class _PhoneScreenState extends State<PhoneScreen> {
                   errorText: _error,
                 ),
                 onChanged: (_) => setState(() => _error = null),
-                onFieldSubmitted: (_) => _requestOTP(),
+                onFieldSubmitted: (_) => _continue(),
               ),
-
               const SizedBox(height: 24),
-
-              // Send OTP button
               ElevatedButton(
-                onPressed: _loading ? null : _requestOTP,
+                onPressed: _loading ? null : _continue,
                 child: _loading
                     ? const SizedBox(
-                        height: 20, width: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
                       )
-                    : const Text('Send Verification Code'),
+                    : const Text('Continue'),
               ),
-
               const SizedBox(height: 32),
-
-              // Support
               Center(
                 child: Column(
                   children: [
@@ -154,15 +163,12 @@ class _PhoneScreenState extends State<PhoneScreen> {
                       style: TextStyle(fontSize: 13, color: AppTheme.textTertiary),
                     ),
                     const SizedBox(height: 4),
-                    GestureDetector(
-                      onTap: () {}, // launch phone call
-                      child: const Text(
-                        'Call 0540571511',
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: AppTheme.blue,
-                          fontWeight: FontWeight.w600,
-                        ),
+                    const Text(
+                      'Call 0540571511',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: AppTheme.blue,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ],

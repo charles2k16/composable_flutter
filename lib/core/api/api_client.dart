@@ -14,7 +14,6 @@ class ApiClient {
       headers: {'Content-Type': 'application/json'},
     ));
 
-    // Auth interceptor — attach token to every request
     _dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) async {
@@ -33,13 +32,18 @@ class ApiClient {
 
   // ─── Auth ─────────────────────────────────────────────────────────────────
 
-  static Future<Map<String, dynamic>> requestOTP(String phone) async {
-    final res = await _dio.post('/client-auth/request-otp', data: {'phone': phone});
+  static Future<Map<String, dynamic>> checkPhone(String phone) async {
+    final res = await _dio.post('/client-auth/check-phone', data: {'phone': phone});
     return res.data;
   }
 
-  static Future<Map<String, dynamic>> verifyOTP(String phone, String code) async {
-    final res = await _dio.post('/client-auth/verify-otp', data: {'phone': phone, 'code': code});
+  static Future<Map<String, dynamic>> setupPin(String phone, String pin) async {
+    final res = await _dio.post('/client-auth/setup-pin', data: {'phone': phone, 'pin': pin});
+    return res.data;
+  }
+
+  static Future<Map<String, dynamic>> loginWithPin(String phone, String pin) async {
+    final res = await _dio.post('/client-auth/login', data: {'phone': phone, 'pin': pin});
     return res.data;
   }
 
