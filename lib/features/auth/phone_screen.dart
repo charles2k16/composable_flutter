@@ -69,7 +69,7 @@ class _PhoneScreenState extends State<PhoneScreen> {
                 text: const TextSpan(
                   children: [
                     TextSpan(
-                      text: 'Composables ',
+                      text: '可组合业务咨询 ',
                       style: TextStyle(
                         fontFamily: 'Syne',
                         fontSize: 22,
