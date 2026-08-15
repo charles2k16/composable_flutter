@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'core/api/api_client.dart';
 import 'core/services/auth_service.dart';
+import 'core/services/push_service.dart';
 import 'core/theme/app_theme.dart';
 import 'features/auth/phone_screen.dart';
 import 'features/home/home_screen.dart';
@@ -21,8 +22,14 @@ void main() async {
   // Init API client
   ApiClient.init();
 
+  // Push notifications (no-op if Firebase is not configured)
+  await PushService.init();
+
   // Check login status
   final loggedIn = await AuthService.isLoggedIn();
+  if (loggedIn) {
+    await PushService.registerIfLoggedIn();
+  }
 
   runApp(ComposablesApp(loggedIn: loggedIn));
 }

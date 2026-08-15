@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../api/api_client.dart';
 import '../models/models.dart';
+import 'push_service.dart';
 
 class AuthService {
   static const _storage = FlutterSecureStorage();
@@ -24,6 +25,7 @@ class AuthService {
     if (res['access_token'] != null) {
       await ApiClient.saveToken(res['access_token']);
       await _storage.write(key: 'client_data', value: jsonEncode(res['client']));
+      await PushService.registerIfLoggedIn();
       return ClientModel.fromJson(res['client']);
     }
     return null;

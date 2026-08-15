@@ -5,6 +5,8 @@ class ClientModel {
   final String name;
   final String phone;
   final String? email;
+  final String? reference;
+  final DateTime? nextDueDate;
   final List<DeviceModel> devices;
 
   ClientModel({
@@ -12,6 +14,8 @@ class ClientModel {
     required this.name,
     required this.phone,
     this.email,
+    this.reference,
+    this.nextDueDate,
     required this.devices,
   });
 
@@ -21,6 +25,8 @@ class ClientModel {
       name: json['name'],
       phone: json['phone'],
       email: json['email'],
+      reference: json['reference'],
+      nextDueDate: json['nextDueDate'] != null ? DateTime.parse(json['nextDueDate']) : null,
       devices: (json['devices'] as List?)
               ?.map((d) => DeviceModel.fromJson(d))
               .toList() ??
@@ -53,6 +59,7 @@ class DeviceModel {
   final int pct;
   final int weeksLeft;
   final bool overdue;
+  final DateTime? nextDueDate;
   final List<PaymentModel> payments;
   final List<ScheduleItem> schedule;
 
@@ -76,6 +83,7 @@ class DeviceModel {
     required this.pct,
     required this.weeksLeft,
     required this.overdue,
+    this.nextDueDate,
     required this.payments,
     required this.schedule,
   });
@@ -101,6 +109,7 @@ class DeviceModel {
       pct: json['pct'] ?? 0,
       weeksLeft: json['weeksLeft'] ?? 0,
       overdue: json['overdue'] ?? false,
+      nextDueDate: json['nextDueDate'] != null ? DateTime.parse(json['nextDueDate']) : null,
       payments: (json['payments'] as List?)
               ?.map((p) => PaymentModel.fromJson(p))
               .toList() ??
@@ -157,21 +166,88 @@ class ScheduleItem {
   final int week;
   final DateTime dueDate;
   final double amount;
+  final double amountPaid;
+  final String? _status;
   final bool paid;
 
   ScheduleItem({
     required this.week,
     required this.dueDate,
     required this.amount,
+    required this.amountPaid,
+    String? status,
     required this.paid,
-  });
+  }) : _status = status;
+
+  String get status => _status ?? (paid ? 'paid' : 'active');
 
   factory ScheduleItem.fromJson(Map<String, dynamic> json) {
+    final paid = json['paid'] == true;
+    final rawStatus = json['status'];
+    final parsedStatus = rawStatus is String && rawStatus.isNotEmpty
+        ? rawStatus
+        : (paid ? 'paid' : 'active');
+    final amountValue = json['amount'] ?? json['amountDue'];
+
     return ScheduleItem(
-      week: json['week'],
-      dueDate: DateTime.parse(json['dueDate']),
-      amount: (json['amount'] as num).toDouble(),
-      paid: json['paid'] ?? false,
+      week: (json['week'] as num).toInt(),
+      dueDate: DateTime.parse(json['dueDate'] as String),
+      amount: (amountValue as num).toDouble(),
+      amountPaid: (json['amountPaid'] as num?)?.toDouble() ?? 0,
+      status: parsedStatus,
+      paid: paid || parsedStatus == 'paid',
     );
   }
+
+  String get resolvedStatus => status;
+
+  bool get isOverdue => status == 'overdue';
+  bool get isPartial => status == 'partial';
+  bool get isActive => status == 'active';
+}
+
+// ─── Client Notification ──────────────────────────────────────────────────────
+
+class ClientNotification {
+  final String id;
+  final String type;
+  final String channel;
+  final String message;
+  final String status;
+  final DateTime? sentAt;
+  final DateTime createdAt;
+
+  ClientNotification({
+    required this.id,
+    required this.type,
+    required this.channel,
+    required this.message,
+    required this.status,
+    this.sentAt,
+    required this.createdAt,
+  });
+
+  factory ClientNotification.fromJson(Map<String, dynamic> json) {
+    return ClientNotification(
+      id: json['id'],
+      type: json['type'],
+      channel: json['channel'] ?? '',
+      message: json['message'],
+      status: json['status'] ?? '',
+      sentAt: json['sentAt'] != null ? DateTime.parse(json['sentAt']) : null,
+      createdAt: DateTime.parse(json['createdAt']),
+    );
+  }
+
+  String get typeLabel => {
+        'PAYMENT_REMINDER': 'Payment Reminder',
+        'PAYMENT_CONFIRMED': 'Payment Confirmed',
+        'OVERDUE_WARNING': 'Overdue Warning',
+        'DEVICE_LOCKED': 'Device Locked',
+        'DEVICE_UNLOCKED': 'Device Unlocked',
+        'ONBOARDING': 'Welcome',
+        'COMPLETION': 'Fully Paid',
+        'CUSTOM': 'Message',
+      }[type] ??
+      type;
 }

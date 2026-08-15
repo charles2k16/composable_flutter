@@ -2,11 +2,14 @@
 
 Client-facing mobile app for iPhone installment customers.
 
+**iOS Bundle ID:** `com.composablesit.client`
+
 ## Screens
 - **Login** — Phone number → 5-digit PIN (setup on first login, enter PIN after)
-- **Home** — Balance overview, payment progress, device info
+- **Home** — Balance overview, payment reference, next due date, how to pay
 - **Payments** — Full payment history
-- **Schedule** — Weekly payment calendar (paid/pending/next)
+- **Schedule** — Weekly payment calendar (paid / partial / overdue / next)
+- **Notifications** — In-app inbox (SMS + push history)
 - **Support** — Call, WhatsApp, SMS, FAQ
 
 ---
@@ -19,23 +22,51 @@ flutter doctor
 ```
 
 ### 2. Connect to your backend
-Open `lib/core/api/api_client.dart` and update:
-```dart
-static const String baseUrl = 'http://YOUR_BACKEND_URL/api';
+The app defaults to production:
+`https://installmngbackend-production.up.railway.app/api`
+
+For local dev:
+```bash
+flutter run --dart-define=API_HOST=localhost
 ```
 
-For local dev: `http://10.0.2.2:4000/api` (Android emulator)
-For local dev: `http://localhost:4000/api` (iOS simulator)
+Or set a full URL:
+```bash
+flutter run --dart-define=API_BASE=http://10.0.2.2:4000/api
+```
 
 ### 3. Install dependencies
 ```bash
 flutter pub get
+cd ios && pod install && cd ..
 ```
 
-### 4. Run the app
+### 4. Firebase push notifications
+
+See **[FIREBASE_SETUP.md](FIREBASE_SETUP.md)** for the full checklist.
+
+Summary:
+1. Register App ID `com.composablesit.client` in Apple Developer (enable Push Notifications)
+2. Add iOS app in Firebase with the same bundle ID
+3. Download `GoogleService-Info.plist` → `ios/Runner/GoogleService-Info.plist`
+4. Upload APNs auth key (.p8) in Firebase → Cloud Messaging
+5. Set `FIREBASE_SERVICE_ACCOUNT` on Railway backend
+
+The app runs without Firebase — push is skipped gracefully if not configured.
+
+### 5. Build release
+```bash
+flutter build ios --release
+```
+
+Archive for TestFlight: open `ios/Runner.xcworkspace` in Xcode → Product → Archive.
+
+### 6. Run the app
 ```bash
 flutter run
 ```
+
+Use a **physical iPhone** to test push notifications.
 
 ---
 
@@ -43,7 +74,9 @@ flutter run
 - `POST /api/client-auth/check-phone` — Verify phone is registered, returns `hasPin`
 - `POST /api/client-auth/setup-pin` — First-time 5-digit PIN setup → JWT
 - `POST /api/client-auth/login` — Verify PIN → JWT
-- `GET  /api/client-auth/me` — Get full client profile
+- `GET  /api/client-auth/me` — Get full client profile (reference, next due date, schedule)
+- `POST /api/client-auth/register-fcm-token` — Save device push token
+- `GET  /api/client-auth/notifications` — In-app notification inbox
 
 ---
 
@@ -58,6 +91,14 @@ PIN is hashed on the server. After 5 failed attempts, login is locked for 15 min
 
 ---
 
+## Push notification events
+Clients receive push (and SMS where configured) for:
+- Payment confirmation
+- Payment due reminders (day before and day of)
+- Device locked / unlocked
+- Installment fully paid
+
+---
+
 ## Distributing to clients
-**Android:** Share the APK file directly via WhatsApp
-**iOS:** Use TestFlight or enterprise distribution
+**iOS:** Use TestFlight or enterprise distribution (bundle ID: `com.composablesit.client`)

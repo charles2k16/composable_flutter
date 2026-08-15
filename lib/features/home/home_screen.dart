@@ -7,6 +7,7 @@ import '../../shared/widgets/widgets.dart';
 import '../payments/payments_screen.dart';
 import '../schedule/schedule_screen.dart';
 import '../support/support_screen.dart';
+import '../notifications/notifications_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -95,6 +96,15 @@ class _DashboardTab extends StatelessWidget {
               ),
               actions: [
                 IconButton(
+                  icon: const Icon(Icons.notifications_outlined, size: 22),
+                  color: AppTheme.textTertiary,
+                  onPressed: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const NotificationsScreen()),
+                    );
+                  },
+                ),
+                IconButton(
                   icon: const Icon(Icons.logout_rounded, size: 20),
                   color: AppTheme.textTertiary,
                   onPressed: () async {
@@ -152,6 +162,10 @@ class _DashboardTab extends StatelessWidget {
 
                     if (device.isLocked || device.overdue || device.isCompleted)
                       const SizedBox(height: 16),
+
+                    if (!device.isCompleted) _PaymentInfoCard(client: client!, device: device),
+
+                    if (!device.isCompleted) const SizedBox(height: 16),
 
                     // Big progress card
                     _ProgressCard(device: device),
@@ -381,6 +395,47 @@ class _StatusBanner extends StatelessWidget {
                 Text(subtitle, style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary, height: 1.4)),
               ],
             ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PaymentInfoCard extends StatelessWidget {
+  final ClientModel client;
+  final DeviceModel device;
+
+  const _PaymentInfoCard({required this.client, required this.device});
+
+  @override
+  Widget build(BuildContext context) {
+    final nextDue = device.nextDueDate ?? client.nextDueDate;
+
+    return DarkCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SectionTitle('How to Pay'),
+          if (client.reference != null && client.reference!.isNotEmpty) ...[
+            InfoRow(label: 'Payment Reference', value: client.reference!, valueColor: AppTheme.blue, mono: true),
+            const Divider(height: 1),
+          ],
+          if (nextDue != null) ...[
+            InfoRow(
+              label: 'Next Payment Due',
+              value: fmtDate(nextDue),
+              valueColor: device.overdue ? AppTheme.red : AppTheme.amber,
+            ),
+            const Divider(height: 1),
+          ],
+          InfoRow(label: 'Weekly Amount', value: fmtGHS(device.weeklyInstallment), valueColor: AppTheme.blue),
+          const Divider(height: 1),
+          const InfoRow(label: 'MoMo Number', value: '0594418292', mono: true),
+          const SizedBox(height: 12),
+          Text(
+            'Send your weekly payment via Mobile Money using your reference code. Call 0547592655 if you need help.',
+            style: TextStyle(fontSize: 12, color: AppTheme.textSecondary.withOpacity(0.9), height: 1.4),
           ),
         ],
       ),

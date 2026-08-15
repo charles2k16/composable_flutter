@@ -1,8 +1,29 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import '../models/models.dart';
 
 class ApiClient {
-  static const String baseUrl = 'http://localhost:4000/api'; // Change this
+  static const String _productionBaseUrl =
+      'https://installmngbackend-production.up.railway.app/api';
+
+  /// Override at build time:
+  /// `flutter run --dart-define=API_BASE=https://installmngbackend-production.up.railway.app/api`
+  /// `flutter run --dart-define=API_HOST=localhost` (local backend on port 4000)
+  static String get baseUrl {
+    const apiBase = String.fromEnvironment('API_BASE');
+    if (apiBase.isNotEmpty) return apiBase;
+
+    const apiHost = String.fromEnvironment('API_HOST');
+    if (apiHost.isNotEmpty) {
+      if (apiHost.startsWith('http')) {
+        return apiHost.endsWith('/api') ? apiHost : '$apiHost/api';
+      }
+      return 'http://$apiHost:4000/api';
+    }
+
+    return _productionBaseUrl;
+  }
+
   static const _storage = FlutterSecureStorage();
   static late Dio _dio;
 
@@ -50,6 +71,16 @@ class ApiClient {
   static Future<Map<String, dynamic>> getMe() async {
     final res = await _dio.get('/client-auth/me');
     return res.data;
+  }
+
+  static Future<void> registerFcmToken(String token) async {
+    await _dio.post('/client-auth/register-fcm-token', data: {'token': token});
+  }
+
+  static Future<List<ClientNotification>> getNotifications() async {
+    final res = await _dio.get('/client-auth/notifications');
+    final list = res.data as List;
+    return list.map((item) => ClientNotification.fromJson(item)).toList();
   }
 
   // ─── Token Management ─────────────────────────────────────────────────────
