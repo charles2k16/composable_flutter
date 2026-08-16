@@ -102,3 +102,60 @@ Clients receive push (and SMS where configured) for:
 
 ## Distributing to clients
 **iOS:** Use TestFlight or enterprise distribution (bundle ID: `com.composablesit.client`)
+
+---
+
+## Apple TestFlight / App Review demo account
+
+TestFlight builds talk to **production**. Apple’s testers need a real client + 5-digit PIN on that API.
+
+### 1. Seed the demo client (once, against production)
+
+From `backend`, with the Railway production `DATABASE_URL` in `.env` (not localhost):
+
+```bash
+APPLE_REVIEW_SEED=1 npm run seed:apple-review
+```
+
+The script is idempotent: re-running updates the same client, resets the PIN, and does not duplicate the device or payments.
+
+Printed credentials:
+
+- Phone: `0550000111`
+- PIN: `24680`
+- Name: `InstallPay Demo`
+
+### 2. Verify against production
+
+```bash
+curl -s https://installmngbackend-production.up.railway.app/api/client-auth/check-phone \
+  -H 'Content-Type: application/json' \
+  -d '{"phone":"0550000111"}'
+# expect hasPin: true
+
+curl -s https://installmngbackend-production.up.railway.app/api/client-auth/login \
+  -H 'Content-Type: application/json' \
+  -d '{"phone":"0550000111","pin":"24680"}'
+```
+
+Smoke-test the same phone + PIN in a TestFlight build.
+
+### 3. App Store Connect notes
+
+App Store Connect → InstallPay → **App Review Information** (and TestFlight **What to Test**):
+
+```
+Demo account (Ghana phone + 5-digit PIN, not email/password)
+
+Phone: 0550000111
+PIN: 24680
+
+How to test:
+1. Open InstallPay
+2. Enter phone 0550000111 and continue
+3. Enter PIN 24680
+4. Home shows installment progress, payments, and schedule
+```
+
+Apple’s form labels this Username / Password. Put the phone in Username and the PIN in Password, and keep the note above so reviewers know it is not an email login.
+
