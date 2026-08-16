@@ -131,6 +131,7 @@ class PaymentModel {
   final String id;
   final double amount;
   final DateTime date;
+  final DateTime? createdAt;
   final String method;
   final String? note;
 
@@ -138,15 +139,19 @@ class PaymentModel {
     required this.id,
     required this.amount,
     required this.date,
+    this.createdAt,
     required this.method,
     this.note,
   });
+
+  DateTime get recordedAt => createdAt ?? date;
 
   factory PaymentModel.fromJson(Map<String, dynamic> json) {
     return PaymentModel(
       id: json['id'],
       amount: (json['amount'] as num).toDouble(),
       date: DateTime.parse(json['date']),
+      createdAt: json['createdAt'] != null ? DateTime.parse(json['createdAt']) : null,
       method: json['method'] ?? 'MOBILE_MONEY',
       note: json['note'],
     );

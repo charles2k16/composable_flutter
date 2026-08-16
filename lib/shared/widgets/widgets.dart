@@ -7,17 +7,30 @@ class DarkCard extends StatelessWidget {
   final Widget child;
   final EdgeInsets? padding;
   final Color? borderColor;
+  final Color? accentColor;
 
-  const DarkCard({super.key, required this.child, this.padding, this.borderColor});
+  const DarkCard({
+    super.key,
+    required this.child,
+    this.padding,
+    this.borderColor,
+    this.accentColor,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final accent = accentColor;
     return Container(
       padding: padding ?? const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppTheme.bg800,
+        color: accent != null
+            ? Color.alphaBlend(accent.withOpacity(0.12), AppTheme.bg800)
+            : AppTheme.bg800,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: borderColor ?? AppTheme.border, width: 0.5),
+        border: Border.all(
+          color: borderColor ?? accent?.withOpacity(0.32) ?? AppTheme.border,
+          width: 0.5,
+        ),
       ),
       child: child,
     );
@@ -125,5 +138,15 @@ String fmtGHS(double amount) {
 
 String fmtDate(DateTime d) {
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  return '${d.day.toString().padLeft(2, '0')} ${months[d.month - 1]} ${d.year}';
+  final local = d.toLocal();
+  return '${local.day.toString().padLeft(2, '0')} ${months[local.month - 1]} ${local.year}';
+}
+
+String fmtTime(DateTime d) {
+  final local = d.toLocal();
+  final hour = local.hour;
+  final minute = local.minute.toString().padLeft(2, '0');
+  final period = hour >= 12 ? 'PM' : 'AM';
+  final hour12 = hour % 12 == 0 ? 12 : hour % 12;
+  return '${hour12.toString().padLeft(2, '0')}:$minute $period';
 }

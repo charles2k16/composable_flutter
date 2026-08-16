@@ -3,7 +3,9 @@ import 'package:percent_indicator/percent_indicator.dart';
 import '../../core/models/models.dart';
 import '../../core/services/auth_service.dart';
 import '../../core/theme/app_theme.dart';
+import '../../shared/widgets/payment_history_card.dart';
 import '../../shared/widgets/widgets.dart';
+import '../pay/how_to_pay_screen.dart';
 import '../payments/payments_screen.dart';
 import '../schedule/schedule_screen.dart';
 import '../support/support_screen.dart';
@@ -38,7 +40,7 @@ class _HomeScreenState extends State<HomeScreen> {
       _DashboardTab(client: _client, loading: _loading, onRefresh: _loadProfile),
       PaymentsScreen(client: _client),
       ScheduleScreen(client: _client),
-      const SupportScreen(),
+      SupportScreen(client: _client),
     ];
 
     return Scaffold(
@@ -163,12 +165,13 @@ class _DashboardTab extends StatelessWidget {
                     if (device.isLocked || device.overdue || device.isCompleted)
                       const SizedBox(height: 16),
 
-                    if (!device.isCompleted) _PaymentInfoCard(client: client!, device: device),
-
-                    if (!device.isCompleted) const SizedBox(height: 16),
-
                     // Big progress card
                     _ProgressCard(device: device),
+
+                    if (!device.isCompleted) ...[
+                      const SizedBox(height: 16),
+                      _PayNowBanner(client: client!, device: device),
+                    ],
 
                     const SizedBox(height: 16),
 
@@ -219,48 +222,13 @@ class _DashboardTab extends StatelessWidget {
                     // Recent payments
                     if (device.payments.isNotEmpty) ...[
                       const SectionTitle('Recent Payments'),
-                      DarkCard(
-                        padding: EdgeInsets.zero,
-                        child: Column(
-                          children: device.payments.take(3).toList().asMap().entries.map((e) {
-                            final i = e.key;
-                            final p = e.value;
-                            return Column(
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                                  child: Row(
-                                    children: [
-                                      Container(
-                                        width: 36, height: 36,
-                                        decoration: BoxDecoration(
-                                          color: AppTheme.green.withOpacity(0.1),
-                                          borderRadius: BorderRadius.circular(10),
-                                        ),
-                                        child: const Icon(Icons.check_rounded, color: AppTheme.green, size: 18),
-                                      ),
-                                      const SizedBox(width: 12),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Text(p.note ?? 'Payment', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500)),
-                                            Text(fmtDate(p.date), style: const TextStyle(fontSize: 11, color: AppTheme.textTertiary)),
-                                          ],
-                                        ),
-                                      ),
-                                      Text(
-                                        fmtGHS(p.amount),
-                                        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppTheme.green),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                if (i < device.payments.take(3).length - 1)
-                                  const Divider(height: 1, indent: 64),
-                              ],
-                            );
-                          }).toList(),
+                      ...device.payments.take(3).toList().asMap().entries.map(
+                        (e) => Padding(
+                          padding: const EdgeInsets.only(bottom: 10),
+                          child: PaymentHistoryCard(
+                            payment: e.value,
+                            weekNumber: e.key + 1,
+                          ),
                         ),
                       ),
                     ],
@@ -402,42 +370,78 @@ class _StatusBanner extends StatelessWidget {
   }
 }
 
-class _PaymentInfoCard extends StatelessWidget {
+class _PayNowBanner extends StatelessWidget {
   final ClientModel client;
   final DeviceModel device;
 
-  const _PaymentInfoCard({required this.client, required this.device});
+  const _PayNowBanner({required this.client, required this.device});
 
   @override
   Widget build(BuildContext context) {
     final nextDue = device.nextDueDate ?? client.nextDueDate;
 
-    return DarkCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const SectionTitle('How to Pay'),
-          if (client.reference != null && client.reference!.isNotEmpty) ...[
-            InfoRow(label: 'Payment Reference', value: client.reference!, valueColor: AppTheme.blue, mono: true),
-            const Divider(height: 1),
-          ],
-          if (nextDue != null) ...[
-            InfoRow(
-              label: 'Next Payment Due',
-              value: fmtDate(nextDue),
-              valueColor: device.overdue ? AppTheme.red : AppTheme.amber,
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () => HowToPayScreen.open(context, client),
+        borderRadius: BorderRadius.circular(16),
+        child: Ink(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                AppTheme.green.withOpacity(0.14),
+                AppTheme.blue.withOpacity(0.1),
+              ],
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
             ),
-            const Divider(height: 1),
-          ],
-          InfoRow(label: 'Weekly Amount', value: fmtGHS(device.weeklyInstallment), valueColor: AppTheme.blue),
-          const Divider(height: 1),
-          const InfoRow(label: 'MoMo Number', value: '0594418292', mono: true),
-          const SizedBox(height: 12),
-          Text(
-            'Send your weekly payment via Mobile Money using your reference code. Call 0547592655 if you need help.',
-            style: TextStyle(fontSize: 12, color: AppTheme.textSecondary.withOpacity(0.9), height: 1.4),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: AppTheme.green.withOpacity(0.28)),
           ),
-        ],
+          child: Row(
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: AppTheme.green.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(Icons.payments_rounded, color: AppTheme.green, size: 24),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'How to Pay',
+                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '${fmtGHS(device.weeklyInstallment)} weekly via MoMo',
+                      style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary),
+                    ),
+                    if (nextDue != null) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        'Due ${fmtDate(nextDue)}',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: device.overdue ? AppTheme.red : AppTheme.amber,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              Icon(Icons.arrow_forward_ios_rounded, size: 16, color: AppTheme.green.withOpacity(0.7)),
+            ],
+          ),
+        ),
       ),
     );
   }

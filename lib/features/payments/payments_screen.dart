@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/models/models.dart';
 import '../../core/theme/app_theme.dart';
+import '../../shared/widgets/payment_history_card.dart';
 import '../../shared/widgets/widgets.dart';
 
 class PaymentsScreen extends StatelessWidget {
@@ -121,62 +122,9 @@ class PaymentsScreen extends StatelessWidget {
                         final payment = payments[index];
                         return Padding(
                           padding: const EdgeInsets.only(bottom: 10),
-                          child: DarkCard(
-                            child: Row(
-                              children: [
-                                // Week number
-                                Container(
-                                  width: 40, height: 40,
-                                  decoration: BoxDecoration(
-                                    color: AppTheme.green.withOpacity(0.1),
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: Center(
-                                    child: Text(
-                                      '${index + 1}',
-                                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppTheme.green),
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(width: 14),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        payment.note ?? 'Week ${index + 1} payment',
-                                        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
-                                      ),
-                                      const SizedBox(height: 2),
-                                      Row(
-                                        children: [
-                                          Text(
-                                            fmtDate(payment.date),
-                                            style: const TextStyle(fontSize: 11, color: AppTheme.textTertiary),
-                                          ),
-                                          const SizedBox(width: 8),
-                                          Container(
-                                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
-                                            decoration: BoxDecoration(
-                                              color: AppTheme.blue.withOpacity(0.1),
-                                              borderRadius: BorderRadius.circular(4),
-                                            ),
-                                            child: Text(
-                                              payment.methodLabel,
-                                              style: const TextStyle(fontSize: 9, color: AppTheme.blue, fontWeight: FontWeight.w600),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                Text(
-                                  fmtGHS(payment.amount),
-                                  style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppTheme.green),
-                                ),
-                              ],
-                            ),
+                          child: PaymentHistoryCard(
+                            payment: payment,
+                            weekNumber: index + 1,
                           ),
                         );
                       },

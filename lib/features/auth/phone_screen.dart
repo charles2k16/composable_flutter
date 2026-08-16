@@ -69,7 +69,7 @@ class _PhoneScreenState extends State<PhoneScreen> {
                 text: const TextSpan(
                   children: [
                     TextSpan(
-                      text: '可组合业务咨询 ',
+                      text: 'InstallPay - ',
                       style: TextStyle(
                         fontFamily: 'Syne',
                         fontSize: 22,
@@ -78,7 +78,7 @@ class _PhoneScreenState extends State<PhoneScreen> {
                       ),
                     ),
                     TextSpan(
-                      text: 'IT',
+                      text: 'Device Finance',
                       style: TextStyle(
                         fontFamily: 'Syne',
                         fontSize: 22,
@@ -91,7 +91,7 @@ class _PhoneScreenState extends State<PhoneScreen> {
               ),
               const SizedBox(height: 6),
               const Text(
-                'Installment Tracker',
+                'Installment Tracker by Composables IT Consult',
                 style: TextStyle(fontSize: 13, color: AppTheme.textTertiary),
               ),
               const SizedBox(height: 56),
@@ -159,7 +159,7 @@ class _PhoneScreenState extends State<PhoneScreen> {
                 child: Column(
                   children: [
                     const Text(
-                      "Don't have an account?",
+                      "Don't have an account or having issues with logging in?",
                       style: TextStyle(fontSize: 13, color: AppTheme.textTertiary),
                     ),
                     const SizedBox(height: 4),
