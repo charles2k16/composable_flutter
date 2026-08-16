@@ -1,6 +1,6 @@
 name: installPay
 description: Track your iPhone installment payments with Composables IT Consult
-version: 1.0.0+3
+version: 1.0.0+4
 
 environment:
   sdk: '>=3.0.0 <4.0.0'
