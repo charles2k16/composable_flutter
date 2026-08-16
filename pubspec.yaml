@@ -1,6 +1,5 @@
-name: composables_it_client
-description: 可组合业务咨询 IT Consult — Client Installment App
-publish_to: 'none'
+name: installPay
+description: Track your iPhone installment payments with Composables IT Consult
 version: 1.0.0+1
 
 environment:
