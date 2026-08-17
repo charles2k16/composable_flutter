@@ -65,6 +65,15 @@ class _PhoneScreenState extends State<PhoneScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 40),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(18),
+                child: Image.asset(
+                  'assets/images/logo.png',
+                  width: 72,
+                  height: 72,
+                ),
+              ),
+              const SizedBox(height: 16),
               RichText(
                 text: const TextSpan(
                   children: [

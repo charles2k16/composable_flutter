@@ -86,14 +86,29 @@ class _DashboardTab extends StatelessWidget {
             SliverAppBar(
               expandedHeight: 0,
               floating: true,
-              title: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              title: Row(
                 children: [
-                  Text(
-                    'Hello, ${client?.name.split(' ').first ?? ''}! 👋',
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(7),
+                    child: Image.asset(
+                      'assets/images/logo.png',
+                      width: 28,
+                      height: 28,
+                    ),
                   ),
-                  const Text('Your installment overview', style: TextStyle(fontSize: 11, color: AppTheme.textTertiary)),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Hello, ${client?.name.split(' ').first ?? ''}! 👋',
+                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                        ),
+                        const Text('Your installment overview', style: TextStyle(fontSize: 11, color: AppTheme.textTertiary)),
+                      ],
+                    ),
+                  ),
                 ],
               ),
               actions: [
